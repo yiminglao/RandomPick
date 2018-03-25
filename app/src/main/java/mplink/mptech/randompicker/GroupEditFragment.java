@@ -121,7 +121,7 @@ public class GroupEditFragment extends Fragment {
                             Log.d("Key", "++++++++"+postSnapshot.getKey());
 
                             List<groupModel> g = postSnapshot.getValue(List.class);
-                            g.get
+
                             Log.d("Value", "======="+g.getGroupName());
                         }
                     }
