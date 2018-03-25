@@ -19,8 +19,9 @@ public interface GroupDao {
     @Query("SELECT * FROM `group`")
     LiveData<List<Group>> getAll();
 
+
     @Query("SELECT * FROM `group` WHERE id = :id")
-    Group getById(int id);
+    Group getById(String id);
 
     @Insert
     void insert(Group group);
@@ -33,6 +34,9 @@ public interface GroupDao {
 
     @Delete
     void delete(Group group);
+
+    @Query("DELETE FROM `group`")
+    void deleteAll();
 
 
 }

@@ -1,20 +1,30 @@
 package mplink.mptech.randompicker;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
 import java.util.List;
 
+import mplink.mptech.randompicker.db.AppDatabase;
 import mplink.mptech.randompicker.db.Group;
+import mplink.mptech.randompicker.models.GroupModel;
 
 public class MainActivity extends AppCompatActivity implements GroupRecyclerViewAdapter.OnGroupClickListener{
 
@@ -22,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
 
     private FirebaseAuth mAuth;
 
+    private DatabaseReference mDatabase;
 
 
     private static final int RC_SIGN_IN = 123;
@@ -33,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
 
 
@@ -54,14 +67,17 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
     private void updateUI(FirebaseUser user) {
 
         if (user != null) {
-            Log.d("uid", mAuth.getCurrentUser().getUid());
-
+            SharedPreferences sp = this.getPreferences(MODE_PRIVATE);
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putString(getString(R.string.userId),user.getUid());
+            editor.apply();
             fm = this.getSupportFragmentManager();
             fm.beginTransaction()
                     .replace(android.R.id.content,new GroupListFragment(),"groupListFrag")
                     .commit();
+            }
         }
-    }
+
 
     @Override
     public void onStart() {
@@ -106,6 +122,8 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
     public void groupDelClick(Group group) {
         DialogFragment dialogFragment = DelConfirmDialog.Instance(group);
         dialogFragment.show(getSupportFragmentManager(),"dialog");
+
+
     }
 
 }

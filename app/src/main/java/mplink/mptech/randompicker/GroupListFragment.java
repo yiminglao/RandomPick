@@ -3,6 +3,8 @@ package mplink.mptech.randompicker;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +14,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,12 +27,19 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import mplink.mptech.randompicker.db.AppDatabase;
 import mplink.mptech.randompicker.db.Group;
+import mplink.mptech.randompicker.models.GroupModel;
 
 
 /**
@@ -48,6 +58,8 @@ public class GroupListFragment extends Fragment{
     private FloatingActionButton fabAdd;
 
     private FirebaseAuth mAuth;
+
+    private DatabaseReference mDatabase;
 
     private static final int RC_SIGN_IN = 123;
 
@@ -112,7 +124,7 @@ public class GroupListFragment extends Fragment{
 
         setHasOptionsMenu(true);
 
-
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         fabAdd = (FloatingActionButton) root.findViewById(R.id.fabAdd);
         
@@ -127,12 +139,9 @@ public class GroupListFragment extends Fragment{
             }
         });
 
-
-
         recyclerView = (RecyclerView) root.findViewById(R.id.rvGroupList);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-
 
         adapter = new GroupRecyclerViewAdapter(new ArrayList<Group>(), (GroupRecyclerViewAdapter.OnGroupClickListener) getActivity(),getContext());
 
@@ -147,6 +156,49 @@ public class GroupListFragment extends Fragment{
                         adapter.addItem(groups);
                     }
                 });
+
+        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        String uid = sharedPreferences.getString(getString(R.string.userId),"");
+
+        mDatabase.child(uid).child(getString(R.string.group)).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AppDatabase.getInstance(getContext()).groupDao().deleteAll();
+                    }
+                }).start();
+
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    final GroupModel g = postSnapshot.getValue(GroupModel.class);
+                    if(g != null)
+                    {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                final Group newGroup = new Group();
+                                newGroup.setGroupName(g.getGroupName());
+                                newGroup.setGid(g.getId());
+                                AppDatabase.getInstance(getContext()).groupDao().insert(newGroup);
+                            }
+                        }).start();
+                    }
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+
+        });
+
+
+
 
 
         return root;

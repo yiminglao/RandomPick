@@ -4,14 +4,14 @@ package mplink.mptech.randompicker.models;
  * Created by Monkey Park on 3/24/2018.
  */
 
-public class groupModel {
+public class GroupModel {
 
-    public groupModel()
+    public GroupModel()
     {
 
     }
 
-    public groupModel(String id, String groupName) {
+    public GroupModel(String id, String groupName) {
         this.id = id;
         this.groupName = groupName;
     }

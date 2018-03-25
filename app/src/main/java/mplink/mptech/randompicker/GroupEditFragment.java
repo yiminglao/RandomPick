@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -20,10 +21,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.List;
-
+import mplink.mptech.randompicker.db.AppDatabase;
 import mplink.mptech.randompicker.db.Group;
-import mplink.mptech.randompicker.models.groupModel;
+import mplink.mptech.randompicker.models.GroupModel;
 
 
 /**
@@ -102,70 +102,57 @@ public class GroupEditFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
+                String groupName = edtGroupName.getText().toString();
                 mDatabase = FirebaseDatabase.getInstance().getReference();
 
-                String id = mDatabase.push().getKey();
-                groupModel groups = new groupModel(id,"45679");
-                mDatabase.child(mAuth.getUid()).child("group").child(id).setValue(groups);
+                if(groupName.trim().length() > 0)
+                {
 
+                    if(group != null)
+                    {
+                        //group.setGroupName(groupName);
+                        GroupModel groups = new GroupModel(group.getGid(),groupName);
+                        mDatabase.child(mAuth.getUid()).child(getString(R.string.group)).child(group.getGid()).setValue(groups);
 
-                mDatabase.child(mAuth.getUid()).addValueEventListener(new ValueEventListener() {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                AppDatabase.getInstance(getContext()).groupDao().update(group);
+                            }
+                        }).start();
+                        Toast.makeText(getActivity(), "Group is update", Toast.LENGTH_SHORT).show();
+                    }else
+                    {
 
+                        String id = mDatabase.push().getKey();
+                        GroupModel groups = new GroupModel(id,groupName);
+                        mDatabase.child(mAuth.getUid()).child(getString(R.string.group)).child(id).setValue(groups);
 
+                        final Group newGroup = new Group();
 
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.d("UID", mAuth.getUid());
-
-                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                            Log.d("Key", "++++++++"+postSnapshot.getKey());
-
-                            List<groupModel> g = postSnapshot.getValue(List.class);
-
-                            Log.d("Value", "======="+g.getGroupName());
-                        }
+                        newGroup.setGroupName(groupName);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                AppDatabase.getInstance(getContext()).groupDao().insert(newGroup);
+                            }
+                        }).start();
+                        Toast.makeText(getActivity(), "Group is Added", Toast.LENGTH_SHORT).show();
+                        edtGroupName.setText("");
                     }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                });
 
-//                String groupName = edtGroupName.getText().toString();
-//
-//                if(groupName.trim().length() > 0)
-//                {
-//                    if(group != null)
-//                    {
-//                        group.setGroupName(groupName);
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                AppDatabase.getInstance(getContext()).groupDao().update(group);
-//                            }
-//                        }).start();
-//                        Toast.makeText(getActivity(), "Group is update", Toast.LENGTH_SHORT).show();
-//                    }else
-//                    {
-//                        final Group newGroup = new Group();
-//
-//                        newGroup.setGroupName(groupName);
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                AppDatabase.getInstance(getContext()).groupDao().insert(newGroup);
-//                            }
-//                        }).start();
-//                        Toast.makeText(getActivity(), "Group is Added", Toast.LENGTH_SHORT).show();
-//                        edtGroupName.setText("");
-//                    }
-//
-//                }else
-//                {
-//                    Toast.makeText(getActivity(), "Please enter the group name!", Toast.LENGTH_SHORT).show();
-//                }
-//
+
+                }else
+                {
+                    Toast.makeText(getActivity(), "Please enter the group name!", Toast.LENGTH_SHORT).show();
+                }
+
+
+
+
+
 
             }
         });

@@ -11,4 +11,6 @@
     <string name="start_random">Start Random</string>
     <string name="speak_again">Speak Again</string>
     <string name="log_out">Log Out</string>
+    <string name="group">group</string>
+    <string name="userId">userId</string>
 </resources>
