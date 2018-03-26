@@ -17,10 +17,13 @@ public class Member {
     private int id;
 
     @ColumnInfo
+    private String mid;
+
+    @ColumnInfo
     private String memberName;
 
     @ForeignKey(entity = Group.class,parentColumns = "id",childColumns = "gid",onDelete = CASCADE)
-    private int gid;
+    private String gid;
 
     public int getId() {
         return id;
@@ -38,11 +41,19 @@ public class Member {
         this.memberName = memberName;
     }
 
-    public int getGid() {
+    public String getMid() {
+        return mid;
+    }
+
+    public void setMid(String mid) {
+        this.mid = mid;
+    }
+
+    public String getGid() {
         return gid;
     }
 
-    public void setGid(int gid) {
+    public void setGid(String gid) {
         this.gid = gid;
     }
 }

@@ -13,4 +13,5 @@
     <string name="log_out">Log Out</string>
     <string name="group">group</string>
     <string name="userId">userId</string>
+    <string name="member">member</string>
 </resources>

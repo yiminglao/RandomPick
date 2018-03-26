@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
     public void groupClick(Group group) {
         fm = getSupportFragmentManager();
         RandomFragment randomFragment = new RandomFragment();
+        randomFragment.group = group;
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(android.R.id.content,randomFragment).addToBackStack(null);
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
