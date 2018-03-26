@@ -107,7 +107,6 @@ public class GroupEditFragment extends Fragment {
 
                 if(groupName.trim().length() > 0)
                 {
-
                     if(group != null)
                     {
                         //group.setGroupName(groupName);
@@ -140,19 +139,10 @@ public class GroupEditFragment extends Fragment {
                         Toast.makeText(getActivity(), "Group is Added", Toast.LENGTH_SHORT).show();
                         edtGroupName.setText("");
                     }
-
-
-
-
                 }else
                 {
                     Toast.makeText(getActivity(), "Please enter the group name!", Toast.LENGTH_SHORT).show();
                 }
-
-
-
-
-
 
             }
         });

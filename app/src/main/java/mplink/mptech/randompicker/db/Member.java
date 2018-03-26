@@ -22,7 +22,7 @@ public class Member {
     @ColumnInfo
     private String memberName;
 
-    @ForeignKey(entity = Group.class,parentColumns = "id",childColumns = "gid",onDelete = CASCADE)
+    @ColumnInfo
     private String gid;
 
     public int getId() {

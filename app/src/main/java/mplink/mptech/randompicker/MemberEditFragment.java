@@ -105,7 +105,7 @@ public class MemberEditFragment extends Fragment {
 
                     if(member != null)
                     {
-                        MemberModel memberModel = new MemberModel(member.getMid(),memberName,group.getGid());
+                        MemberModel memberModel = new MemberModel(member.getMid(),memberName,member.getGid());
 
                         mDatabase.child(uid).child(getString(R.string.member)).child(member.getMid()).setValue(memberModel);
 
@@ -138,7 +138,6 @@ public class MemberEditFragment extends Fragment {
                         Toast.makeText(getActivity(), "Member is Added", Toast.LENGTH_SHORT).show();
                         edtMemberName.setText("");
                     }
-
 
                 }else
                 {

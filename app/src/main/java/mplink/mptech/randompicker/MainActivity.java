@@ -24,9 +24,11 @@ import java.util.List;
 
 import mplink.mptech.randompicker.db.AppDatabase;
 import mplink.mptech.randompicker.db.Group;
+import mplink.mptech.randompicker.db.Member;
 import mplink.mptech.randompicker.models.GroupModel;
 
-public class MainActivity extends AppCompatActivity implements GroupRecyclerViewAdapter.OnGroupClickListener{
+public class MainActivity extends AppCompatActivity implements GroupRecyclerViewAdapter.OnGroupClickListener ,
+                                                                MemberRecyclerViewAdapter.onMemberClickListener{
 
     FragmentManager fm;
 
@@ -125,6 +127,25 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
         dialogFragment.show(getSupportFragmentManager(),"dialog");
 
 
+    }
+
+    @Override
+    public void memberEditClick(Member member) {
+        MemberEditFragment memberEditFragment = new MemberEditFragment();
+        memberEditFragment.member = member;
+        fm = this.getSupportFragmentManager();
+        fm.beginTransaction()
+                .replace(android.R.id.content,memberEditFragment)
+                .addToBackStack(null)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .commit();
+
+    }
+
+    @Override
+    public void memberDelClick(Member member) {
+        DialogFragment dialogFragment = DelConfirmDialog.Instance(member);
+        dialogFragment.show(getSupportFragmentManager(),"dialog");
     }
 
 }

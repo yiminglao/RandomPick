@@ -20,6 +20,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import mplink.mptech.randompicker.db.AppDatabase;
 import mplink.mptech.randompicker.db.Group;
+import mplink.mptech.randompicker.db.Member;
 
 /**
  * Created by Monkey Park on 3/8/2018.
@@ -28,6 +29,8 @@ import mplink.mptech.randompicker.db.Group;
 public class DelConfirmDialog extends DialogFragment {
 
     private Group group;
+
+    private Member member;
 
 
     public DelConfirmDialog() {
@@ -38,6 +41,13 @@ public class DelConfirmDialog extends DialogFragment {
     {
         DelConfirmDialog dialogFragment = new DelConfirmDialog();
         dialogFragment.group = group;
+        return dialogFragment;
+    }
+
+    public static DialogFragment Instance(Member member)
+    {
+        DelConfirmDialog dialogFragment = new DelConfirmDialog();
+        dialogFragment.member = member;
         return dialogFragment;
     }
 
@@ -59,17 +69,24 @@ public class DelConfirmDialog extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
-                        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-                        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-                        String uid = sharedPreferences.getString(getString(R.string.userId),"");
+                        if(group != null)
+                        {
+                            DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+                            SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+                            String uid = sharedPreferences.getString(getString(R.string.userId),"");
 
-                        mDatabase.child(uid).child(getString(R.string.group)).child(group.getGid()).removeValue();
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                AppDatabase.getInstance(getContext()).groupDao().delete(group);
-                            }
-                        }).start();
+                            mDatabase.child(uid).child(getString(R.string.group)).child(group.getGid()).removeValue();
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AppDatabase.getInstance(getContext()).groupDao().delete(group);
+                                }
+                            }).start();
+                        }
+                        else if(member != null)
+                        {
+                            Toast.makeText(getActivity(), "member will delete", Toast.LENGTH_SHORT).show();
+                        }
 
 
 

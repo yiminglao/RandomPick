@@ -30,7 +30,6 @@ public class MemberRecyclerViewAdapter extends RecyclerView.Adapter<MemberRecycl
     {
         void memberEditClick(Member member);
         void memberDelClick(Member member);
-        void memberClick(Member member);
 
     }
 
@@ -65,13 +64,6 @@ public class MemberRecyclerViewAdapter extends RecyclerView.Adapter<MemberRecycl
         if(member != null)
         {
             holder.txtMemberName.setText(member.getMemberName());
-            holder.view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mCallback.memberClick(member);
-                }
-            });
-
 
             holder.view.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
