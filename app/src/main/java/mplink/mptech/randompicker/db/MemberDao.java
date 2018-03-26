@@ -38,5 +38,8 @@ public interface MemberDao {
     @Delete
     void delete(Member member);
 
+    @Query("DELETE FROM member WHERE gid = :gid")
+    void deleteAll(String gid);
+
 
 }

@@ -71,12 +71,6 @@ public class GroupRecyclerViewAdapter extends RecyclerView.Adapter<GroupRecycler
                 }
             });
 
-            holder.view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                   mCallback.groupClick(group);
-                }
-            });
 
             holder.view.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
@@ -126,7 +120,6 @@ public class GroupRecyclerViewAdapter extends RecyclerView.Adapter<GroupRecycler
 
         private View view;
         private TextView txtGroupName;
-        private ImageButton imgBtn;
 
         public ViewHolder(View itemView) {
             super(itemView);
