@@ -7,9 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +16,8 @@ import android.widget.Toast;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import mplink.mptech.randompicker.db.AppDatabase;
-import mplink.mptech.randompicker.db.Group;
-import mplink.mptech.randompicker.db.Member;
+import mplink.mptech.randompicker.models.GroupModel;
+import mplink.mptech.randompicker.models.MemberModel;
 
 /**
  * Created by Monkey Park on 3/8/2018.
@@ -28,23 +25,23 @@ import mplink.mptech.randompicker.db.Member;
 
 public class DelConfirmDialog extends DialogFragment {
 
-    private Group group;
+    private GroupModel group;
 
-    private Member member;
+    private MemberModel member;
 
 
     public DelConfirmDialog() {
         // Required empty public constructor
     }
 
-    public static DialogFragment Instance(Group group)
+    public static DialogFragment Instance(GroupModel group)
     {
         DelConfirmDialog dialogFragment = new DelConfirmDialog();
         dialogFragment.group = group;
         return dialogFragment;
     }
 
-    public static DialogFragment Instance(Member member)
+    public static DialogFragment Instance(MemberModel member)
     {
         DelConfirmDialog dialogFragment = new DelConfirmDialog();
         dialogFragment.member = member;
@@ -75,17 +72,18 @@ public class DelConfirmDialog extends DialogFragment {
                             SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
                             String uid = sharedPreferences.getString(getString(R.string.userId),"");
 
-                            mDatabase.child(uid).child(getString(R.string.group)).child(group.getGid()).removeValue();
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    AppDatabase.getInstance(getContext()).groupDao().delete(group);
-                                }
-                            }).start();
+                            mDatabase.child(uid).child(getString(R.string.group)).child(group.getId()).removeValue();
+                            mDatabase.child(uid).child(getString(R.string.member)).child(group.getId()).removeValue();
+
                         }
                         else if(member != null)
                         {
-                            Toast.makeText(getActivity(), "member will delete", Toast.LENGTH_SHORT).show();
+                            DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+                            SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+                            String uid = sharedPreferences.getString(getString(R.string.userId),"");
+
+                            mDatabase.child(uid).child(getString(R.string.member)).child(member.getGid()).child(member.getId()).removeValue();
+
                         }
 
 

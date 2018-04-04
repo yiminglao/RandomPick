@@ -6,9 +6,12 @@ package mplink.mptech.randompicker.models;
 
 public class GroupModel {
 
+    private String id;
+
+    private String groupName;
+
     public GroupModel()
     {
-
     }
 
     public GroupModel(String id, String groupName) {
@@ -16,9 +19,7 @@ public class GroupModel {
         this.groupName = groupName;
     }
 
-    private String id;
 
-    private String groupName;
 
     public String getId() {
         return id;

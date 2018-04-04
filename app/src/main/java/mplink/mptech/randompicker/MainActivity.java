@@ -1,31 +1,21 @@
 package mplink.mptech.randompicker;
 
-import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
 import java.util.List;
 
-import mplink.mptech.randompicker.db.AppDatabase;
-import mplink.mptech.randompicker.db.Group;
-import mplink.mptech.randompicker.db.Member;
 import mplink.mptech.randompicker.models.GroupModel;
+import mplink.mptech.randompicker.models.MemberModel;
 
 public class MainActivity extends AppCompatActivity implements GroupRecyclerViewAdapter.OnGroupClickListener ,
                                                                 MemberRecyclerViewAdapter.onMemberClickListener{
@@ -33,9 +23,6 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
     FragmentManager fm;
 
     private FirebaseAuth mAuth;
-
-    private DatabaseReference mDatabase;
-
 
     private static final int RC_SIGN_IN = 123;
 
@@ -47,22 +34,6 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
 
         mAuth = FirebaseAuth.getInstance();
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-
-
-
-        // Choose authentication providers
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build());
-
-        // Create and launch sign-in intent
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN);
     }
 
 
@@ -86,6 +57,20 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
+
+        // Choose authentication providers
+        List<AuthUI.IdpConfig> providers = Arrays.asList(
+                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
+                new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build());
+
+        // Create and launch sign-in intent
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .build(),
+                RC_SIGN_IN);
+
         updateUI(currentUser);
 
     }
@@ -99,20 +84,23 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
     }
 
     @Override
-    public void groupClick(Group group) {
-        fm = getSupportFragmentManager();
+    public void groupClick(GroupModel group) {
         RandomFragment randomFragment = new RandomFragment();
         randomFragment.group = group;
-        FragmentTransaction transaction = fm.beginTransaction();
-        transaction.replace(android.R.id.content,randomFragment).addToBackStack(null);
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        transaction.commit();
+
+        fm = this.getSupportFragmentManager();
+        fm.beginTransaction()
+                .replace(android.R.id.content,randomFragment)
+                .addToBackStack(null)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .commit();
     }
 
     @Override
-    public void groupEditClick(Group group) {
+    public void groupEditClick(GroupModel group,List<GroupModel> list) {
         GroupEditFragment editFragment = new GroupEditFragment();
         editFragment.group = group;
+        editFragment.setGroupList(list);
         fm = this.getSupportFragmentManager();
         fm.beginTransaction()
                 .replace(android.R.id.content,editFragment)
@@ -122,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
     }
 
     @Override
-    public void groupDelClick(Group group) {
+    public void groupDelClick(GroupModel group) {
         DialogFragment dialogFragment = DelConfirmDialog.Instance(group);
         dialogFragment.show(getSupportFragmentManager(),"dialog");
 
@@ -130,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
     }
 
     @Override
-    public void memberEditClick(Member member) {
+    public void memberEditClick(MemberModel member) {
         MemberEditFragment memberEditFragment = new MemberEditFragment();
         memberEditFragment.member = member;
         fm = this.getSupportFragmentManager();
@@ -143,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
     }
 
     @Override
-    public void memberDelClick(Member member) {
+    public void memberDelClick(MemberModel member) {
         DialogFragment dialogFragment = DelConfirmDialog.Instance(member);
         dialogFragment.show(getSupportFragmentManager(),"dialog");
     }

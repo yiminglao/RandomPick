@@ -1,12 +1,12 @@
 package mplink.mptech.randompicker;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -16,6 +16,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -24,7 +26,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import mplink.mptech.randompicker.db.Group;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+
+import mplink.mptech.randompicker.models.GroupModel;
+import mplink.mptech.randompicker.models.MemberModel;
 
 
 /**
@@ -32,14 +40,25 @@ import mplink.mptech.randompicker.db.Group;
  */
 public class RandomFragment extends Fragment {
 
+    int result;
+
+    String selectedName ="";
 
     private View root;
 
     private Toolbar toolbar;
 
-    public Group group;
+    public GroupModel group;
 
     private DatabaseReference mDatabase;
+
+    TextView txtPickName;
+
+    private List<MemberModel> memberModelList = new ArrayList<>();
+
+    Button btnRandom, btnAgain;
+
+    private TextToSpeech tts;
 
 
     public RandomFragment() {
@@ -63,29 +82,102 @@ public class RandomFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
+        btnRandom = (Button) root.findViewById(R.id.btnRandom);
 
+        btnAgain = (Button) root.findViewById(R.id.btnAgain);
+
+        txtPickName = (TextView) root.findViewById(R.id.txtPickName);
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
         SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         String uid = sharedPreferences.getString(getString(R.string.userId),"");
 
-        mDatabase.child(uid).child("member").addValueEventListener(new ValueEventListener() {
+
+        mDatabase.child(uid).child(getString(R.string.member)).child(group.getId()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
+                memberModelList.clear();
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    final MemberModel memberModel = postSnapshot.getValue(MemberModel.class);
+                    if(memberModel != null && memberModel.getGid().equals(group.getId()))
+                    {
+                        memberModelList.add(memberModel);
+                    }
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
+
         });
 
+        tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    int result = tts.setLanguage(Locale.ENGLISH);
 
+                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.d("TTS", "This Language is not supported");
 
+                    } else {
+                        Log.d("TTS", "Initilization Failed!");
+                    }
+                }
+            }
+        });
+
+        btnRandom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startRandom();
+            }
+        });
+
+        btnAgain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                speakName(selectedName);
+            }
+        });
         return root;
     }
+
+    public void startRandom() {
+        Random rand = new Random();
+        int randNum = 0;
+        for (int i = 0; i<5;i++)
+        {
+            randNum = rand.nextInt(memberModelList.size());
+        }
+
+        if (memberModelList.size()>0) {
+            result = randNum;
+            selectedName = memberModelList.get(result).getMemberName();
+            txtPickName.setText(selectedName);
+            speakName(selectedName);
+        }else
+        {
+            Toast.makeText(getActivity(), "Please add member to you list!", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    public void speakName(String name)
+    {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            tts.speak(name, TextToSpeech.QUEUE_FLUSH,null,null);
+        }else
+        {
+            tts.speak(name, TextToSpeech.QUEUE_FLUSH, null);
+        }
+    }
+
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {

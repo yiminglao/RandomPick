@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import mplink.mptech.randompicker.db.Member;
+import mplink.mptech.randompicker.models.MemberModel;
 
 /**
  * Created by Monkey Park on 3/25/2018.
@@ -20,7 +20,7 @@ import mplink.mptech.randompicker.db.Member;
 
 public class MemberRecyclerViewAdapter extends RecyclerView.Adapter<MemberRecyclerViewAdapter.ViewHolder>{
 
-    private List<Member> memberList;
+    private List<MemberModel> memberList;
 
     private Context mCtx;
 
@@ -28,12 +28,12 @@ public class MemberRecyclerViewAdapter extends RecyclerView.Adapter<MemberRecycl
 
     public interface onMemberClickListener
     {
-        void memberEditClick(Member member);
-        void memberDelClick(Member member);
+        void memberEditClick(MemberModel member);
+        void memberDelClick(MemberModel member);
 
     }
 
-    public MemberRecyclerViewAdapter(List<Member> memberList, Context context, onMemberClickListener listener)
+    public MemberRecyclerViewAdapter(List<MemberModel> memberList, Context context, onMemberClickListener listener)
     {
         this.memberList = memberList;
         this.mCtx = context;
@@ -41,13 +41,7 @@ public class MemberRecyclerViewAdapter extends RecyclerView.Adapter<MemberRecycl
 
     }
 
-    public void addItem(List<Member> members)
-    {
-        memberList.clear();
-        memberList.addAll(members);
-        notifyDataSetChanged();
 
-    }
 
 
     @Override
@@ -59,7 +53,7 @@ public class MemberRecyclerViewAdapter extends RecyclerView.Adapter<MemberRecycl
 
     @Override
     public void onBindViewHolder(MemberRecyclerViewAdapter.ViewHolder holder, int position) {
-        final Member member = memberList.get(position);
+        final MemberModel member = memberList.get(position);
 
         if(member != null)
         {

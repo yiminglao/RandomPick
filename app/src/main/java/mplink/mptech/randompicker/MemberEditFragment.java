@@ -19,9 +19,9 @@ import android.widget.Toast;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import mplink.mptech.randompicker.db.AppDatabase;
-import mplink.mptech.randompicker.db.Group;
-import mplink.mptech.randompicker.db.Member;
+import java.util.List;
+import java.util.Map;
+
 import mplink.mptech.randompicker.models.GroupModel;
 import mplink.mptech.randompicker.models.MemberModel;
 
@@ -36,16 +36,23 @@ public class MemberEditFragment extends Fragment {
 
     private Button btnCancel,btnSave;
 
-    public Group group;
+    public String groupId;
 
-    public Member member;
+    public MemberModel member;
 
     private TextInputEditText edtMemberName;
 
     private DatabaseReference mDatabase;
 
+    private List<MemberModel> memberModelList;
+
     public MemberEditFragment() {
         // Required empty public constructor
+    }
+
+    public void setMemberModelList(List<MemberModel> list)
+    {
+        this.memberModelList = list;
     }
 
 
@@ -105,38 +112,57 @@ public class MemberEditFragment extends Fragment {
 
                     if(member != null)
                     {
-                        MemberModel memberModel = new MemberModel(member.getMid(),memberName,member.getGid());
+                        MemberModel memberModel = new MemberModel(member.getId(),memberName,member.getGid());
 
-                        mDatabase.child(uid).child(getString(R.string.member)).child(member.getMid()).setValue(memberModel);
+                        mDatabase.child(uid).child(getString(R.string.member)).child(member.getGid()).child(member.getId()).setValue(memberModel);
 
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                AppDatabase.getInstance(getContext()).memberDao().update(member);
-                            }
-                        }).start();
-                        Toast.makeText(getActivity(), "Group is update", Toast.LENGTH_SHORT).show();
-                    }else
+                        Toast.makeText(getActivity(), "Member is update", Toast.LENGTH_SHORT).show();
+                    }
+                    else
                     {
+                        if(memberModelList.isEmpty())
+                        {
+                            String id = mDatabase.push().getKey();
 
-                        String id = mDatabase.push().getKey();
+                            MemberModel memberModel = new MemberModel(id,memberName,groupId);
+                            mDatabase.child(uid).child(getString(R.string.member)).child(groupId).child(id).setValue(memberModel);
 
-                        MemberModel memberModel = new MemberModel(id,memberName,group.getGid());
-                        mDatabase.child(uid).child(getString(R.string.member)).child(id).setValue(memberModel);
+                            final MemberModel newMember = new MemberModel();
+                            newMember.setGid(id);
+                            newMember.setMemberName(memberName);
+                            newMember.setId(id);
 
-
-                        final Member newMember = new Member();
-                        newMember.setGid(id);
-                        newMember.setMemberName(memberName);
-                        newMember.setMid(id);
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                AppDatabase.getInstance(getContext()).memberDao().insert(newMember);
+                            Toast.makeText(getActivity(), "Member is Added", Toast.LENGTH_SHORT).show();
+                            edtMemberName.setText("");
+                        }
+                        else
+                        {
+                            boolean checkName = true;
+                            for(int i=0; i<memberModelList.size(); i++)
+                            {
+                                if(memberModelList.get(i).getMemberName().equals(memberName))
+                                {
+                                    Toast.makeText(getActivity(), "The member name is already exist", Toast.LENGTH_SHORT).show();
+                                    checkName = false;
+                                }
                             }
-                        }).start();
-                        Toast.makeText(getActivity(), "Member is Added", Toast.LENGTH_SHORT).show();
-                        edtMemberName.setText("");
+                            if(checkName)
+                            {
+                                String id = mDatabase.push().getKey();
+
+                                MemberModel memberModel = new MemberModel(id,memberName,groupId);
+                                mDatabase.child(uid).child(getString(R.string.member)).child(groupId).child(id).setValue(memberModel);
+
+                                final MemberModel newMember = new MemberModel();
+                                newMember.setGid(id);
+                                newMember.setMemberName(memberName);
+                                newMember.setId(id);
+
+                                Toast.makeText(getActivity(), "Member is Added", Toast.LENGTH_SHORT).show();
+                                edtMemberName.setText("");
+                            }
+                        }
+
                     }
 
                 }else

@@ -1,27 +1,18 @@
 package mplink.mptech.randompicker;
 
 import android.content.Context;
-import android.support.v7.view.menu.MenuItemWrapperICS;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
-import java.util.zip.Inflater;
 
-import mplink.mptech.randompicker.db.Group;
+import mplink.mptech.randompicker.models.GroupModel;
 
 /**
  * Created by Monkey Park on 3/6/2018.
@@ -29,20 +20,20 @@ import mplink.mptech.randompicker.db.Group;
 
 public class GroupRecyclerViewAdapter extends RecyclerView.Adapter<GroupRecyclerViewAdapter.ViewHolder>{
 
-    private List<Group> groupList;
+    private List<GroupModel> groupList;
     private Context mCtx;
 
     public OnGroupClickListener mCallback;
 
     public interface OnGroupClickListener
     {
-        void groupClick(Group group);
-        void groupEditClick(Group group);
-        void groupDelClick(Group group);
+        void groupClick(GroupModel group);
+        void groupEditClick(GroupModel group,List<GroupModel> list);
+        void groupDelClick(GroupModel group);
     }
 
 
-    public GroupRecyclerViewAdapter(List<Group> groupList, OnGroupClickListener listener, Context context)
+    public GroupRecyclerViewAdapter(List<GroupModel> groupList, OnGroupClickListener listener, Context context)
     {
         this.groupList = groupList;
         mCallback = listener;
@@ -60,7 +51,7 @@ public class GroupRecyclerViewAdapter extends RecyclerView.Adapter<GroupRecycler
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        final Group group = groupList.get(position);
+        final GroupModel group = groupList.get(position);
         if(group != null)
         {
             holder.txtGroupName.setText(group.getGroupName());
@@ -85,7 +76,7 @@ public class GroupRecyclerViewAdapter extends RecyclerView.Adapter<GroupRecycler
                         public boolean onMenuItemClick(MenuItem item) {
                             switch (item.getItemId()) {
                                 case R.id.mBtnEdit:
-                                    mCallback.groupEditClick(group);
+                                    mCallback.groupEditClick(group,groupList);
                                     break;
                                 case R.id.mBtnDel:
                                     mCallback.groupDelClick(group);
@@ -109,12 +100,6 @@ public class GroupRecyclerViewAdapter extends RecyclerView.Adapter<GroupRecycler
         return groupList.size();
     }
 
-    void addItem(List<Group> groups)
-    {
-        groupList.clear();
-        groupList.addAll(groups);
-        notifyDataSetChanged();
-    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 

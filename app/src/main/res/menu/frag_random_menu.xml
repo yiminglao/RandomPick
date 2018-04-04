@@ -5,6 +5,11 @@
     <item
         android:id="@+id/mbtnAdd"
         android:icon="@android:drawable/ic_menu_edit"
-        android:title="Add new member"
+        android:title="@string/add_new_member"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/mBtnSetting"
+        android:icon="@drawable/ic_settings_black_108dp"
+        android:title="@string/setting"
         app:showAsAction="ifRoom" />
 </menu>

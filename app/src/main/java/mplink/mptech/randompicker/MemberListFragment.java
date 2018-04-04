@@ -1,12 +1,9 @@
 package mplink.mptech.randompicker;
 
 
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -29,10 +26,6 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import mplink.mptech.randompicker.db.AppDatabase;
-import mplink.mptech.randompicker.db.Group;
-import mplink.mptech.randompicker.db.Member;
-import mplink.mptech.randompicker.models.AllMemberViewModel;
 import mplink.mptech.randompicker.models.GroupModel;
 import mplink.mptech.randompicker.models.MemberModel;
 
@@ -46,7 +39,7 @@ public class MemberListFragment extends Fragment {
 
     private Toolbar toolbar;
 
-    public Group group;
+    public GroupModel group;
 
     private FloatingActionButton fabAdd;
 
@@ -55,6 +48,8 @@ public class MemberListFragment extends Fragment {
     private MemberRecyclerViewAdapter adapter;
 
     private DatabaseReference mDatabase;
+
+    private List<MemberModel> memberModelList;
 
     public MemberListFragment() {
         // Required empty public constructor
@@ -81,7 +76,7 @@ public class MemberListFragment extends Fragment {
             actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
         }
 
-        Log.d("gid",group.getGid());
+        memberModelList = new ArrayList<>();
 
         fabAdd = (FloatingActionButton) root.findViewById(R.id.fabAdd);
 
@@ -89,7 +84,8 @@ public class MemberListFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 MemberEditFragment memberEditFragment = new MemberEditFragment();
-                memberEditFragment.group = group;
+                memberEditFragment.groupId = group.getId();
+                memberEditFragment.setMemberModelList(memberModelList);
                 ((MainActivity) getActivity()).getSupportFragmentManager()
                         .beginTransaction()
                         .replace(android.R.id.content,memberEditFragment)
@@ -103,53 +99,28 @@ public class MemberListFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
-        adapter = new MemberRecyclerViewAdapter(new ArrayList<Member>(),getContext(),(MemberRecyclerViewAdapter.onMemberClickListener) getActivity());
+        adapter = new MemberRecyclerViewAdapter(memberModelList,getContext(),(MemberRecyclerViewAdapter.onMemberClickListener) getActivity());
 
         recyclerView.setAdapter(adapter);
 
-        ViewModelProviders.of(this)
-                .get(AllMemberViewModel.class)
-                .getAllMember(getContext())
-                .observe(this, new Observer<List<Member>>() {
-                    @Override
-                    public void onChanged(@Nullable List<Member> memberList) {
-                        adapter.addItem(memberList);
-                    }
-                });
 
 
         SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         String uid = sharedPreferences.getString(getString(R.string.userId),"");
 
-        mDatabase.child(uid).child(getString(R.string.member)).addValueEventListener(new ValueEventListener() {
+        mDatabase.child(uid).child(getString(R.string.member)).child(group.getId()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        AppDatabase.getInstance(getContext()).memberDao().deleteAll(group.getGid());
-                    }
-                }).start();
-
+                memberModelList.clear();
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     final MemberModel memberModel = postSnapshot.getValue(MemberModel.class);
-                    if(memberModel != null)
+                    if(memberModel != null && memberModel.getGid().equals(group.getId()))
                     {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                final Member newMember= new Member();
-                                newMember.setMemberName(memberModel.getMemberName());
-                                newMember.setGid(memberModel.getGid());
-                                newMember.setMid(memberModel.getId());
-                                AppDatabase.getInstance(getContext()).memberDao().insert(newMember);
-                            }
-                        }).start();
+                        memberModelList.add(memberModel);
                     }
 
                 }
-
+                adapter.notifyDataSetChanged();
             }
 
             @Override
@@ -158,12 +129,6 @@ public class MemberListFragment extends Fragment {
             }
 
         });
-
-
-
-
-
-
 
         return root;
     }

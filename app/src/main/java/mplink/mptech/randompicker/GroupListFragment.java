@@ -1,13 +1,10 @@
 package mplink.mptech.randompicker;
 
 
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -37,8 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import mplink.mptech.randompicker.db.AppDatabase;
-import mplink.mptech.randompicker.db.Group;
 import mplink.mptech.randompicker.models.GroupModel;
 
 
@@ -58,6 +53,8 @@ public class GroupListFragment extends Fragment{
     private FloatingActionButton fabAdd;
 
     private FirebaseAuth mAuth;
+
+    private List<GroupModel> groupModelList;
 
     private DatabaseReference mDatabase;
 
@@ -126,13 +123,16 @@ public class GroupListFragment extends Fragment{
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
+
         fabAdd = (FloatingActionButton) root.findViewById(R.id.fabAdd);
         
         fabAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                GroupEditFragment groupEditFragment = new GroupEditFragment();
+                groupEditFragment.setGroupList(groupModelList);
                 ((MainActivity) getActivity()).getSupportFragmentManager().beginTransaction()
-                        .replace(android.R.id.content,new GroupEditFragment())
+                        .replace(android.R.id.content,groupEditFragment)
                         .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                         .addToBackStack(null)
                         .commit();
@@ -143,50 +143,29 @@ public class GroupListFragment extends Fragment{
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
-        adapter = new GroupRecyclerViewAdapter(new ArrayList<Group>(), (GroupRecyclerViewAdapter.OnGroupClickListener) getActivity(),getContext());
+        groupModelList = new ArrayList<>();
+
+        adapter = new GroupRecyclerViewAdapter(groupModelList, (GroupRecyclerViewAdapter.OnGroupClickListener) getActivity(),getContext());
 
         recyclerView.setAdapter(adapter);
-
-        ViewModelProviders.of(this)
-                .get(AllGroupViewModel.class)
-                .getAllGroup(getContext())
-                .observe(this, new Observer<List<Group>>() {
-                    @Override
-                    public void onChanged(@Nullable List<Group> groups) {
-                        adapter.addItem(groups);
-                    }
-                });
 
         SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         String uid = sharedPreferences.getString(getString(R.string.userId),"");
 
-        mDatabase.child(uid).child(getString(R.string.group)).addValueEventListener(new ValueEventListener() {
+        mDatabase.child(uid).child(getString(R.string.group)).orderByValue().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        AppDatabase.getInstance(getContext()).groupDao().deleteAll();
-                    }
-                }).start();
-
+                groupModelList.clear();
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    final GroupModel g = postSnapshot.getValue(GroupModel.class);
-                    if(g != null)
+
+                    if(postSnapshot != null)
                     {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                final Group newGroup = new Group();
-                                newGroup.setGroupName(g.getGroupName());
-                                newGroup.setGid(g.getId());
-                                AppDatabase.getInstance(getContext()).groupDao().insert(newGroup);
-                            }
-                        }).start();
+                        final GroupModel g = postSnapshot.getValue(GroupModel.class);
+                        groupModelList.add(g);
                     }
 
                 }
+                adapter.notifyDataSetChanged();
 
             }
 
@@ -196,7 +175,6 @@ public class GroupListFragment extends Fragment{
             }
 
         });
-
 
 
 
