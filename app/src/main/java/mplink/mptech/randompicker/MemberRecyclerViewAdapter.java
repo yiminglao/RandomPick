@@ -42,8 +42,6 @@ public class MemberRecyclerViewAdapter extends RecyclerView.Adapter<MemberRecycl
     }
 
 
-
-
     @Override
     public MemberRecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_item,parent,false);
