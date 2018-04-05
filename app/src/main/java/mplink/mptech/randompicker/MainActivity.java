@@ -1,5 +1,7 @@
 package mplink.mptech.randompicker;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -8,6 +10,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -32,50 +35,62 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mAuth = FirebaseAuth.getInstance();
+        SharedPreferences sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+        String uid = sharedPreferences.getString(getString(R.string.userId),"");
 
-    }
+        if(uid.equals(""))
+        {
+            mAuth = FirebaseAuth.getInstance();
 
-
-    private void updateUI(FirebaseUser user) {
-
-        if (user != null) {
-            SharedPreferences sp = this.getPreferences(MODE_PRIVATE);
-            SharedPreferences.Editor editor = sp.edit();
-            editor.putString(getString(R.string.userId),user.getUid());
-            editor.apply();
+            fm = this.getSupportFragmentManager();
+            fm.beginTransaction()
+                    .replace(android.R.id.content,new LoginFragment())
+                    .commit();
+        }
+        else
+        {
             fm = this.getSupportFragmentManager();
             fm.beginTransaction()
                     .replace(android.R.id.content,new GroupListFragment(),"groupListFrag")
                     .commit();
-            }
         }
-
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-
-        // Choose authentication providers
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build());
-
-        // Create and launch sign-in intent
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN);
-
-        updateUI(currentUser);
 
     }
 
-
+//
+//    private void updateUI(FirebaseUser user) {
+//
+//        if (user != null) {
+//            SharedPreferences sp = this.getPreferences(MODE_PRIVATE);
+//            SharedPreferences.Editor editor = sp.edit();
+//            editor.putString(getString(R.string.userId),user.getUid());
+//            editor.apply();
+//
+//
+//
+//            }
+//        }
+//
+//
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//
+//        SharedPreferences sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+//        String uid = sharedPreferences.getString(getString(R.string.userId),"");
+//        if(uid.equals(""))
+//        {
+//
+//
+//        }else
+//        {
+//            fm.beginTransaction()
+//                    .replace(android.R.id.content,new GroupListFragment(),"groupListFrag")
+//                    .commit();
+//        }
+//
+//
+//    }
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -88,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
         RandomFragment randomFragment = new RandomFragment();
         randomFragment.group = group;
 
-        fm = this.getSupportFragmentManager();
         fm.beginTransaction()
                 .replace(android.R.id.content,randomFragment)
                 .addToBackStack(null)
@@ -101,7 +115,6 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
         GroupEditFragment editFragment = new GroupEditFragment();
         editFragment.group = group;
         editFragment.setGroupList(list);
-        fm = this.getSupportFragmentManager();
         fm.beginTransaction()
                 .replace(android.R.id.content,editFragment)
                 .addToBackStack(null)
@@ -121,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
     public void memberEditClick(MemberModel member) {
         MemberEditFragment memberEditFragment = new MemberEditFragment();
         memberEditFragment.member = member;
-        fm = this.getSupportFragmentManager();
         fm.beginTransaction()
                 .replace(android.R.id.content,memberEditFragment)
                 .addToBackStack(null)
