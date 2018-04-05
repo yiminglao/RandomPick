@@ -84,9 +84,14 @@ public class GroupListFragment extends Fragment{
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             public void onComplete(@NonNull Task<Void> task) {
                                 Toast.makeText(getActivity(), "you are log out", Toast.LENGTH_SHORT).show();
+
+                                SharedPreferences sp = getActivity().getPreferences(Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sp.edit();
+                                editor.putString(getString(R.string.userId),"");
+                                editor.apply();
                                 mAuth = FirebaseAuth.getInstance();
 
-                                // Choose authentication providers
+                                //Choose authentication providers
                                 List<AuthUI.IdpConfig> providers = Arrays.asList(
                                         new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
                                         new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build());
