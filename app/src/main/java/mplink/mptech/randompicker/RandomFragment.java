@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
@@ -123,11 +124,42 @@ public class RandomFragment extends Fragment {
 
         });
 
+        SharedPreferences sp = getActivity().getPreferences(Context.MODE_PRIVATE);
+        String selectLanguage = sp.getString(getString(R.string.language),"");
+        if(selectLanguage.equals(""))
+        {
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putString(getString(R.string.language),getString(R.string.english));
+            editor.apply();
+
+        }
+
         tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS) {
-                    int result = tts.setLanguage(Locale.ENGLISH);
+                    SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+                    String selectLanguage = sharedPreferences.getString(getString(R.string.language),"");
+
+                    int result = 0;
+
+                    switch (selectLanguage)
+                    {
+                        case "English":
+                            result = tts.setLanguage(Locale.ENGLISH);
+                            break;
+                        case "Chinese":
+                            result = tts.setLanguage(Locale.CHINESE);
+                            break;
+                        case "Spanish":
+                            Locale spa = new Locale ("spa", "ESP");
+                            result = tts.setLanguage(spa);
+                            break;
+
+                            default:
+                             Log.d("language","can't set language");
+                    }
+
 
                     if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.d("TTS", "This Language is not supported");
@@ -233,6 +265,10 @@ public class RandomFragment extends Fragment {
                         .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                         .commit();
                 return true;
+            case R.id.mBtnSetting:
+                DialogFragment dialogFragment = LanguageFragment.Instance();
+                dialogFragment.show(getFragmentManager(),"settingFrag");
+
             default:
                 return super.onOptionsItemSelected(item);
 
