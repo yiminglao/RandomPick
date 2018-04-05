@@ -111,7 +111,6 @@ public class RandomFragment extends Fragment {
                     if(memberModel != null && memberModel.getGid().equals(group.getId()))
                     {
                         memberModelList.add(memberModel);
-
                     }
                 }
                 tempMemberModelList.addAll(memberModelList);
