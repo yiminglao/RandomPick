@@ -54,9 +54,11 @@ public class RandomFragment extends Fragment {
 
     TextView txtPickName;
 
-    private List<MemberModel> memberModelList = new ArrayList<>();
+    private List<MemberModel> memberModelList;
 
-    Button btnRandom, btnAgain;
+    private List<MemberModel> tempMemberModelList;
+
+    Button btnRandom, btnAgain, btnReset;
 
     private TextToSpeech tts;
 
@@ -82,9 +84,15 @@ public class RandomFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
+        memberModelList = new ArrayList<>();
+
+        tempMemberModelList  = new ArrayList<>();
+
         btnRandom = (Button) root.findViewById(R.id.btnRandom);
 
         btnAgain = (Button) root.findViewById(R.id.btnAgain);
+
+        btnReset = (Button) root.findViewById(R.id.btnReset);
 
         txtPickName = (TextView) root.findViewById(R.id.txtPickName);
 
@@ -103,8 +111,10 @@ public class RandomFragment extends Fragment {
                     if(memberModel != null && memberModel.getGid().equals(group.getId()))
                     {
                         memberModelList.add(memberModel);
+
                     }
                 }
+                tempMemberModelList.addAll(memberModelList);
             }
 
             @Override
@@ -143,26 +153,50 @@ public class RandomFragment extends Fragment {
                 speakName(selectedName);
             }
         });
+
+        btnReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tempMemberModelList.clear();
+                tempMemberModelList.addAll(memberModelList);
+                Toast.makeText(getActivity(), "List been reset! " + tempMemberModelList.size(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
         return root;
     }
+
+
 
     public void startRandom() {
         Random rand = new Random();
         int randNum = 0;
-        for (int i = 0; i<5;i++)
-        {
-            randNum = rand.nextInt(memberModelList.size());
-        }
 
-        if (memberModelList.size()>0) {
+        if (tempMemberModelList.size()>0 && memberModelList.size() > 0) {
+            randNum = rand.nextInt(tempMemberModelList.size());
             result = randNum;
-            selectedName = memberModelList.get(result).getMemberName();
+            selectedName = tempMemberModelList.get(result).getMemberName();
             txtPickName.setText(selectedName);
             speakName(selectedName);
-        }else
+            tempMemberModelList.remove(result);
+        }
+        else if(tempMemberModelList.size() == 0 && memberModelList.size() > 0)
+        {
+            tempMemberModelList.clear();
+            tempMemberModelList.addAll(memberModelList);
+            randNum = rand.nextInt(tempMemberModelList.size());
+            result = randNum;
+            selectedName = tempMemberModelList.get(result).getMemberName();
+            txtPickName.setText(selectedName);
+            speakName(selectedName);
+            tempMemberModelList.remove(result);
+        }
+        else
         {
             Toast.makeText(getActivity(), "Please add member to you list!", Toast.LENGTH_SHORT).show();
         }
+        Log.d("random pick " , selectedName + "size of array "+ tempMemberModelList.size());
 
     }
 
@@ -204,7 +238,6 @@ public class RandomFragment extends Fragment {
                 return super.onOptionsItemSelected(item);
 
         }
-
 
     }
 }
