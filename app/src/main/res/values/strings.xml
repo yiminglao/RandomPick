@@ -15,4 +15,5 @@
     <string name="userId">userId</string>
     <string name="member">member</string>
     <string name="add_new_member">Add new member</string>
+    <string name="reset_list">Reset List</string>
 </resources>
