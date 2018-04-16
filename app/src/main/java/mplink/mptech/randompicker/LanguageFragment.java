@@ -29,6 +29,7 @@ public class LanguageFragment extends DialogFragment {
         return languageFragment;
     }
 
+
     public LanguageFragment() {
         // Required empty public constructor
     }
@@ -49,11 +50,11 @@ public class LanguageFragment extends DialogFragment {
                 .setItems(R.array.language_array, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         String value = getResources().getStringArray(R.array.language_array)[which];
-
                         SharedPreferences sp = getActivity().getPreferences(Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sp.edit();
                         editor.putString(getString(R.string.language),value);
                         editor.apply();
+
                     }
                 });
         return builder.create();

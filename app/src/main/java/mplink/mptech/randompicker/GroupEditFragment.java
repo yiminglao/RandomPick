@@ -127,7 +127,7 @@ public class GroupEditFragment extends Fragment {
                             GroupModel groups = new GroupModel(group.getId(),groupName);
                             mDatabase.child(uid).child(getString(R.string.group)).child(group.getId()).setValue(groups);
 
-                            Toast.makeText(getActivity(), "Group is update", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "Group is updated", Toast.LENGTH_SHORT).show();
 
                         }else
                         {

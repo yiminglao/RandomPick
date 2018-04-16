@@ -64,7 +64,7 @@ public class MemberListFragment extends Fragment {
 
         toolbar = (Toolbar) root.findViewById(R.id.memberToolbar);
 
-        toolbar.setTitle("Member List");
+        toolbar.setTitle(R.string.member_list);
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
 

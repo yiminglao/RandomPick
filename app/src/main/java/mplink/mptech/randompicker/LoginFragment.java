@@ -1,17 +1,21 @@
 package mplink.mptech.randompicker;
 
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -43,12 +47,12 @@ public class LoginFragment extends Fragment {
         // Inflate the layout for this fragment
         root = inflater.inflate(R.layout.fragment_login, container, false);
 
-        mAuth = FirebaseAuth.getInstance();
+
 
         // Choose authentication providers
         List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build());
+                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
+                new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build());
 
         // Create and launch sign-in intent
         startActivityForResult(
@@ -58,19 +62,37 @@ public class LoginFragment extends Fragment {
                         .build(),
                 RC_SIGN_IN);
 
-
-
         return root;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN) {
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+
+            if (resultCode == Activity.RESULT_OK) {
+                // Successfully signed in
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+
+                updateUI(currentUser);
+
+            } else {
+                ((MainActivity) getActivity()).getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(android.R.id.content,new LoginFragment())
+                        .commit();
+            }
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-
-        updateUI(currentUser);
+        mAuth = FirebaseAuth.getInstance();
     }
+
+
 
     private void updateUI(FirebaseUser user) {
 
@@ -86,5 +108,7 @@ public class LoginFragment extends Fragment {
 
         }
     }
+
+
 
 }

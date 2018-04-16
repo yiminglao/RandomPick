@@ -8,9 +8,17 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -23,24 +31,34 @@ import mplink.mptech.randompicker.models.MemberModel;
 public class MainActivity extends AppCompatActivity implements GroupRecyclerViewAdapter.OnGroupClickListener ,
                                                                 MemberRecyclerViewAdapter.onMemberClickListener{
 
+    private InterstitialAd mInterstitialAd;
+
+    private GroupModel groups;
+
     FragmentManager fm;
 
-    private FirebaseAuth mAuth;
+    private String uid;
 
-    private static final int RC_SIGN_IN = 123;
-
+    RandomFragment randomFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SharedPreferences sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
-        String uid = sharedPreferences.getString(getString(R.string.userId),"");
+        groups = new GroupModel();
 
-        if(uid.equals(""))
+        MobileAds.initialize(this, "ca-app-pub-3612854431763761~6473835553");
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-3612854431763761/5917988706");
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+
+
+        SharedPreferences sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+        uid = sharedPreferences.getString(getString(R.string.userId),getString(R.string.out));
+
+        if(uid.equals(getString(R.string.out)))
         {
-            mAuth = FirebaseAuth.getInstance();
 
             fm = this.getSupportFragmentManager();
             fm.beginTransaction()
@@ -55,42 +73,46 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
                     .commit();
         }
 
+
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                // Code to be executed when an ad request fails.
+            }
+
+            @Override
+            public void onAdOpened() {
+                // Code to be executed when the ad is displayed.
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+            }
+
+            @Override
+            public void onAdClosed() {
+                mInterstitialAd.loadAd(new AdRequest.Builder().build());
+
+                randomFragment = new RandomFragment();
+                randomFragment.group = groups;
+                fm.beginTransaction()
+                .replace(android.R.id.content,randomFragment,"randomFrag")
+                .addToBackStack(null)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .commit();
+            }
+        });
+
     }
 
-//
-//    private void updateUI(FirebaseUser user) {
-//
-//        if (user != null) {
-//            SharedPreferences sp = this.getPreferences(MODE_PRIVATE);
-//            SharedPreferences.Editor editor = sp.edit();
-//            editor.putString(getString(R.string.userId),user.getUid());
-//            editor.apply();
-//
-//
-//
-//            }
-//        }
-//
-//
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//
-//        SharedPreferences sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
-//        String uid = sharedPreferences.getString(getString(R.string.userId),"");
-//        if(uid.equals(""))
-//        {
-//
-//
-//        }else
-//        {
-//            fm.beginTransaction()
-//                    .replace(android.R.id.content,new GroupListFragment(),"groupListFrag")
-//                    .commit();
-//        }
-//
-//
-//    }
+
+
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -98,16 +120,23 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
         return super.onSupportNavigateUp();
     }
 
+
     @Override
     public void groupClick(GroupModel group) {
-        RandomFragment randomFragment = new RandomFragment();
-        randomFragment.group = group;
 
-        fm.beginTransaction()
-                .replace(android.R.id.content,randomFragment)
-                .addToBackStack(null)
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .commit();
+        this.groups = group;
+        if (mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+        } else {
+            RandomFragment randomFragment = new RandomFragment();
+            randomFragment.group = groups;
+            fm.beginTransaction()
+                    .replace(android.R.id.content,randomFragment)
+                    .addToBackStack(null)
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                    .commit();
+        }
+
     }
 
     @Override
@@ -147,5 +176,6 @@ public class MainActivity extends AppCompatActivity implements GroupRecyclerView
         DialogFragment dialogFragment = DelConfirmDialog.Instance(member);
         dialogFragment.show(getSupportFragmentManager(),"dialog");
     }
+
 
 }

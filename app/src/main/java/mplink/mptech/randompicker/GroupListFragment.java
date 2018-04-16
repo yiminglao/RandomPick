@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +22,9 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -58,6 +62,8 @@ public class GroupListFragment extends Fragment{
 
     private DatabaseReference mDatabase;
 
+    private InterstitialAd mInterstitialAd;
+
     private static final int RC_SIGN_IN = 123;
 
     public GroupListFragment() {
@@ -75,34 +81,22 @@ public class GroupListFragment extends Fragment{
 
         switch (item.getItemId())
         {
-            case R.id.mBtnSetting:
-                Toast.makeText(getActivity(), "456789", Toast.LENGTH_SHORT).show();
-                return true;
             case R.id.mBtnLogOut:
                 AuthUI.getInstance()
                         .signOut(getActivity())
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             public void onComplete(@NonNull Task<Void> task) {
-                                Toast.makeText(getActivity(), "you are log out", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), "you are logout", Toast.LENGTH_SHORT).show();
 
                                 SharedPreferences sp = getActivity().getPreferences(Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editor = sp.edit();
-                                editor.putString(getString(R.string.userId),"");
+                                editor.putString(getString(R.string.userId),getString(R.string.out));
                                 editor.apply();
-                                mAuth = FirebaseAuth.getInstance();
 
-                                //Choose authentication providers
-                                List<AuthUI.IdpConfig> providers = Arrays.asList(
-                                        new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                                        new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build());
-
-                                // Create and launch sign-in intent
-                                startActivityForResult(
-                                        AuthUI.getInstance()
-                                                .createSignInIntentBuilder()
-                                                .setAvailableProviders(providers)
-                                                .build(),
-                                        RC_SIGN_IN);
+                                FragmentManager fm = getActivity().getSupportFragmentManager();
+                                fm.beginTransaction()
+                                        .replace(android.R.id.content,new LoginFragment())
+                                        .commit();
                             }
                         });
 
@@ -150,7 +144,8 @@ public class GroupListFragment extends Fragment{
 
         groupModelList = new ArrayList<>();
 
-        adapter = new GroupRecyclerViewAdapter(groupModelList, (GroupRecyclerViewAdapter.OnGroupClickListener) getActivity(),getContext());
+        adapter = new GroupRecyclerViewAdapter(groupModelList,
+                (GroupRecyclerViewAdapter.OnGroupClickListener) getActivity(),getContext());
 
         recyclerView.setAdapter(adapter);
 
@@ -180,9 +175,6 @@ public class GroupListFragment extends Fragment{
             }
 
         });
-
-
-
 
         return root;
     }

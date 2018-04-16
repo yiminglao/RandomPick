@@ -16,4 +16,18 @@
     <string name="member">member</string>
     <string name="add_new_member">Add new member</string>
     <string name="reset_list">Reset List</string>
+    <string name="english">English</string>
+    <string name="chinese">Chinese</string>
+    <string name="spanish">Spanish</string>
+    <string name="language">language</string>
+    <string name="banner_ad_unit_id">ca-app-pub-3612854431763761/5917988706</string>
+    <string name="out">out</string>
+    <string name="member_list">Member List</string>
+
+
+    <string-array name="language_array">
+        <item>English</item>
+        <item>Chinese</item>
+        <item>Spanish</item>
+    </string-array>
 </resources>

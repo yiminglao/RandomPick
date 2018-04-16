@@ -61,13 +61,14 @@ public class RandomFragment extends Fragment {
 
     Button btnRandom, btnAgain, btnReset;
 
+    private String selectLanguage;
+
     private TextToSpeech tts;
 
 
     public RandomFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -76,6 +77,7 @@ public class RandomFragment extends Fragment {
         root =  inflater.inflate(R.layout.fragment_random, container, false);
 
         toolbar = (Toolbar) root.findViewById(R.id.randToolbar);
+
 
         ((MainActivity) getActivity()).setSupportActionBar(toolbar);
 
@@ -124,52 +126,8 @@ public class RandomFragment extends Fragment {
 
         });
 
-        SharedPreferences sp = getActivity().getPreferences(Context.MODE_PRIVATE);
-        String selectLanguage = sp.getString(getString(R.string.language),"");
-        if(selectLanguage.equals(""))
-        {
-            SharedPreferences.Editor editor = sp.edit();
-            editor.putString(getString(R.string.language),getString(R.string.english));
-            editor.apply();
+        setTts();
 
-        }
-
-        tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status == TextToSpeech.SUCCESS) {
-                    SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-                    String selectLanguage = sharedPreferences.getString(getString(R.string.language),"");
-
-                    int result = 0;
-
-                    switch (selectLanguage)
-                    {
-                        case "English":
-                            result = tts.setLanguage(Locale.ENGLISH);
-                            break;
-                        case "Chinese":
-                            result = tts.setLanguage(Locale.CHINESE);
-                            break;
-                        case "Spanish":
-                            Locale spa = new Locale ("spa", "ESP");
-                            result = tts.setLanguage(spa);
-                            break;
-
-                            default:
-                             Log.d("language","can't set language");
-                    }
-
-
-                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                        Log.d("TTS", "This Language is not supported");
-
-                    } else {
-                        Log.d("TTS", "Initilization Failed!");
-                    }
-                }
-            }
-        });
 
         btnRandom.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -179,8 +137,11 @@ public class RandomFragment extends Fragment {
         });
 
         btnAgain.setOnClickListener(new View.OnClickListener() {
+
+
             @Override
             public void onClick(View v) {
+
                 speakName(selectedName);
             }
         });
@@ -190,7 +151,7 @@ public class RandomFragment extends Fragment {
             public void onClick(View v) {
                 tempMemberModelList.clear();
                 tempMemberModelList.addAll(memberModelList);
-                Toast.makeText(getActivity(), "List been reset! " + tempMemberModelList.size(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "List been reset! The Size of List is " + tempMemberModelList.size(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -198,9 +159,48 @@ public class RandomFragment extends Fragment {
         return root;
     }
 
+    private void setTts()
+    {
+        SharedPreferences sp = getActivity().getPreferences(Context.MODE_PRIVATE);
+        selectLanguage = sp.getString(getString(R.string.language),"");
+        if(selectLanguage.equals(""))
+        {
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putString(getString(R.string.language),getString(R.string.english));
+            editor.apply();
+        }
+
+        tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+
+                    switch (selectLanguage)
+                    {
+                        case "English":
+                            tts.setLanguage(Locale.ENGLISH);
+                            break;
+                        case "Chinese":
+                            tts.setLanguage(Locale.CHINESE);
+                            break;
+                        case "Spanish":
+                            Locale spa = new Locale ("spa", "ESP");
+                            tts.setLanguage(spa);
+                            break;
+
+                        default:
+                            Log.d("language","can't set language");
+                    }
+
+
+                }
+            }
+        });
+    }
 
 
     public void startRandom() {
+
         Random rand = new Random();
         int randNum = 0;
 
@@ -227,12 +227,29 @@ public class RandomFragment extends Fragment {
         {
             Toast.makeText(getActivity(), "Please add member to you list!", Toast.LENGTH_SHORT).show();
         }
-        Log.d("random pick " , selectedName + "size of array "+ tempMemberModelList.size());
 
     }
 
     public void speakName(String name)
     {
+        SharedPreferences sp = getActivity().getPreferences(Context.MODE_PRIVATE);
+        selectLanguage = sp.getString(getString(R.string.language),"");
+        switch (selectLanguage)
+        {
+            case "English":
+                tts.setLanguage(Locale.ENGLISH);
+                break;
+            case "Chinese":
+                tts.setLanguage(Locale.CHINESE);
+                break;
+            case "Spanish":
+                Locale spa = new Locale ("spa", "ESP");
+                tts.setLanguage(spa);
+                break;
+
+            default:
+                Log.d("language","can't set language");
+        }
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
             tts.speak(name, TextToSpeech.QUEUE_FLUSH,null,null);
@@ -242,7 +259,16 @@ public class RandomFragment extends Fragment {
         }
     }
 
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(tts != null)
+        {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {

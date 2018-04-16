@@ -61,7 +61,7 @@ public class DelConfirmDialog extends DialogFragment {
         return new AlertDialog.Builder(getActivity())
                 .setIcon(android.R.drawable.stat_sys_warning)
                 .setTitle("Delete Confirm")
-                .setMessage("Are you sure want to delete it")
+                .setMessage("Are you sure want to delete it?")
                 .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -88,7 +88,7 @@ public class DelConfirmDialog extends DialogFragment {
 
 
 
-                        Toast.makeText(getActivity(), "delete", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "deleted", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

@@ -75,10 +75,10 @@ public class MemberEditFragment extends Fragment {
         if(member != null)
         {
             edtMemberName.setText(member.getMemberName());
-            toolbar.setTitle("Edit Group");
+            toolbar.setTitle("Edit Member");
         }else
         {
-            toolbar.setTitle("Add New Group");
+            toolbar.setTitle("Add New Member");
         }
 
         ((MainActivity) getActivity()).setSupportActionBar(toolbar);
@@ -169,11 +169,6 @@ public class MemberEditFragment extends Fragment {
                 {
                     Toast.makeText(getActivity(), "Please enter the Member name!", Toast.LENGTH_SHORT).show();
                 }
-
-
-
-
-
 
             }
         });
